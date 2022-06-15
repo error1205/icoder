@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Blogpost{% endblock title %}
+
+{% block blogactive %}active{% endblock blogactive %}
+
+{% block body %}
+
+{% load humanize %}
+{% load extras %}
+<div class="container my-3">
+    <div class="blog-post">
+        <h2 class="blog-post-title text-success">{{post.title}}<h2>
+                <p class="blog-post-meta">{{post.timeStamp}} by <a class="text-success"
+                        href="/about">{{post.author}}</a> (<span>{{post.views}} views</span>)</p>
+                <hr>
+                <p>{{post.content|safe}}</p>
+                <hr>
+    </div>
+</div>
+
+<div class="container my-3">
+    <h2 class="text-success">Comments({{comments.count}})</h2>
+
+    <div class="my-2">
+
+        {% if user.is_authenticated %}
+
+        <form action="/blog/postComment" method="post">
+
+
+
+            {% csrf_token %}
+
+            <div class="form-group">
+                <!-- <label for="exampleInputEmail1">Email address</label> -->
+                <input type="text" class="form-control text-success" name="comment" placeholder="enter your comment"
+                    required>
+
+            </div>
+
+
+            <input type="hidden" name="postSno" value="{{post.sno}}">
+            <input type="hidden" name="parentSno" value="">
+            <button type="submit" class="btn btn-success ">Submit</button>
+        </form>
+
+        {% else %}
+
+        <p><b>Please, Login to post a comment</b></p>
+
+        {% endif %}
+
+
+    </div>
+    {% for comment in comments %}
+
+
+    <section>
+        <div class="container text-dark">
+            <div class="row d-flex justify-content-center">
+                <div class="col-md-12 col-lg-10 col-xl-8">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <!-- <h4 class="text-dark mb-0">Unread comments (4)</h4> -->
+
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex flex-start">
+                                <img class="rounded-circle shadow-1-strong me-3" src="/static/image/user.jpg"
+                                    alt="avatar" width="40" height="40" />
+                                <div class="w-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <!-- <div class="row"> -->
+                                        <!-- <div class="col-md-1">Image Here</div> -->
+                                        <div class="col-md-11"><b class="text-success">{{comment.user.username}}</b>
+                                            <span class="badge badge-success">{{comment.timeStamp | naturaltime}}</span>
+                                            <div class="">{{comment.comment}}</div>
+                                        </div>
+                                        <!-- </div> -->
+                                        <!-- <p class="mb-0">2 days ago</p> -->
+                                    </div>
+                                    <div>
+                                        <!-- class="d-flex justify-content-between align-items-center" -->
+                                        <!-- <p class="small mb-0" style="color: #aaa;">
+                                            <a href="#!" class="text-success">Remove</a> •
+                                            <a href="#!" class="text-success">Reply</a> 
+                                        </p> -->
+
+                                        <div>
+                                            {% if user.is_authenticated %}
+                                            <a class="text-success" data-toggle="collapse"
+                                                href="#replyBox{{comment.sno}}" role="button" aria-expanded="false"
+                                                aria-controls="replyBox{{comment.sno}}">
+                                                Reply
+                                            </a>
+                                            <!-- <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                                              Button with data-target
+                                            </button> -->
+                                        </div>
+                                        <div class="collapse" id="replyBox{{comment.sno}}">
+                                            <div class="card card-body my-2 text-success">
+                                                <form action="/blog/postComment" method="post">
+
+
+
+                                                    {% csrf_token %}
+
+                                                    <div class="form-group">
+                                                        <!-- <label for="exampleInputEmail1">Email address</label> -->
+                                                        <input type="text" class="form-control text-success"
+                                                            name="comment" placeholder="Post Reply" required>
+                                                        <input type="hidden" name="parentSno" value="{{comment.sno}}">
+
+                                                    </div>
+
+
+                                                    <input type="hidden" name="postSno" value="{{post.sno}}">
+                                                    <button type="submit" class="btn btn-success ">Submit</button>
+                                                </form>
+                                            </div>
+                                        </div>
+
+                                        {% else %}
+                                        <a class="text-success" data-toggle="collapse"
+                                                href="#replyBox{{comment.sno}}" role="button" aria-expanded="false"
+                                                aria-controls="replyBox{{comment.sno}}" disabled>
+                                                Login to Reply
+                                            </a>
+                                        {% endif %}
+                                        {% for reply in replyDict|get_val:comment.sno %}
+
+                                        <div class="">
+                                            <!--  -->
+                                            <div class="w-100">
+                                                <div class="" >
+                                                    <hr>
+                                                    <!-- <div class="row"> -->
+                                                    <!-- <div class="col-md-1">Image Here</div> -->
+
+
+
+                                                    <!-- {{reply}} -->
+                                                        
+                                                    <div class="col-md-11 d-flex align-items-center mb-3">
+                                                        <img class="rounded-circle shadow-1-strong me-3"
+                                                        src="/static/image/user.jpg" alt="avatar" width="30"
+                                                        height="30" />
+                                                        <div class="col-md-11">
+                                                        <b class="text-success">{{reply.user.username}}</b>
+                                                        <span class="badge badge-success">{{reply.timeStamp | naturaltime}}</span>
+                                                        <div class="">{{reply.comment}}</div>
+                                                    </div></div>
+
+                                                    {% endfor %}
+
+
+                                                    <!-- </div> -->
+                                                    <!-- <p class="mb-0">2 days ago</p> -->
+                                                </div>
+                                            </div>
+
+
+                                            <div class="d-flex flex-row">
+                                                <i class="fas fa-star text-warning me-2"></i>
+                                                <i class="far fa-check-circle" style="color: #aaa;"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+    </section>
+    {% endfor %}
+</div>
+
+{% endblock body %}
